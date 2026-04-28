@@ -987,3 +987,6 @@ async function startBot() {
     });
 }
 startBot();
+// Server Web Dummy untuk Uptime 24 Jam
+const http = require('http');
+http.createServer((req, res) => res.end('Server Nailong VIP Aktif!')).listen(process.env.PORT || 8080);
