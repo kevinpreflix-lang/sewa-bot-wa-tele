@@ -34,7 +34,7 @@ const isWebpBuffer = (buffer) => {
 const config = {
     nomorBot: "6285179905048", // Pastikan nomor ini adalah nomor bot WA yang aktif
     nomorOwner: "6289519096772", 
-    nameOwner: "Nailong VIP",
+    nameOwner: "HII KEVIN PREFLIX",
     prefix: ".",
     emailUtama: "purnawankevin63@gmail.com" 
 };
