@@ -10,7 +10,8 @@ const {
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const fs = require('fs');
-const sharp = require('sharp'); // Modul pembuat stiker & HD Image
+const sharp = require('sharp'); 
+const http = require('http'); // Modul Server 24 Jam
 
 // ==========================================
 // 🛡️ 1. ANTI CRASH & DETEKSI WEBP
@@ -172,7 +173,7 @@ const createSticker = async (buffer, crop = false) => {
 const formatMemegen = (text) => text.trim().replace(/\s+/g, '_').replace(/\?/g, '~q').replace(/%/g, '~p') || '_';
 
 // ==========================================
-// 🚀 7. MESIN UTAMA BOT
+// 🚀 7. MESIN UTAMA BOT & PAIRING
 // ==========================================
 async function startBot() {
     console.clear();
@@ -180,23 +181,23 @@ async function startBot() {
     console.log(`\x1b[33m┃\x1b[0m \x1b[36m 🎩 NAILONG VIP SYSTEM EST. 2024 \x1b[0m \x1b[33m┃\x1b[0m`);
     console.log(`\x1b[33m╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯\x1b[0m\n`);
 
-    // 🔥 PENTING: Ganti nama folder sesi agar Render mereset cache-nya
-    const { state, saveCreds } = await useMultiFileAuthState('sesi_nailong_final');
+    // 🔥 PENGATURAN PAMUNGKAS: Ganti sesi ke v4 dan ubah identitas Browser
+    const { state, saveCreds } = await useMultiFileAuthState('sesi_nailong_v4');
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
         version,
         auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) },
-        printQRInTerminal: false, // MATIKAN QR CODE
+        printQRInTerminal: false,
         logger: pino({ level: 'silent' }),
-        browser: ["Ubuntu", "Chrome", "20.0.04"], // WAJIB UNTUK PAIRING CODE
+        // Bypass Keamanan WhatsApp dengan profil Mac OS
+        browser: ["Mac OS", "chrome", "121.0.6167.159"], 
+        generateHighQualityLinkPreview: true,
     });
 
-    // ==========================================
-    // 🔑 8. SISTEM PAIRING CODE
-    // ==========================================
     if (!sock.authState.creds.registered) {
         const phoneNumber = config.nomorBot.replace(/[^0-9]/g, '');
+        // Penundaan sedikit lebih lama agar socket benar-benar siap menerima kode
         setTimeout(async () => {
             try {
                 let code = await sock.requestPairingCode(phoneNumber);
@@ -208,7 +209,7 @@ async function startBot() {
             } catch (err) {
                 console.log(`\x1b[31m[ 🚨 ERROR ] Gagal mendapatkan kode:\x1b[0m`, err.message);
             }
-        }, 3000); 
+        }, 4000); 
     }
 
     sock.ev.on('creds.update', saveCreds);
@@ -292,7 +293,7 @@ async function startBot() {
             const r = (lastDisconnect.error instanceof Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
             if (r) {
                 console.log(`\x1b[33m[ ! ] Koneksi terputus, mencoba ulang dalam 5 detik...\x1b[0m`);
-                setTimeout(startBot, 5000); // ANTI SPAM RECONNECT
+                setTimeout(startBot, 5000);
             }
         }
     });
@@ -986,7 +987,14 @@ async function startBot() {
         }
     });
 }
+
+// ==========================================
+// 🌐 8. SERVER PINTU 24 JAM (ANTI TIDUR)
+// ==========================================
+const port = process.env.PORT || 8080;
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Bot Nailong VIP is Online 24/7');
+}).listen(port, () => console.log(`\x1b[32m[ 🌐 ] Web Server Aktif di Port ${port} untuk Uptime 24 Jam\x1b[0m\n`));
+
 startBot();
-// Server Web Dummy untuk Uptime 24 Jam
-const http = require('http');
-http.createServer((req, res) => res.end('Server Nailong VIP Aktif!')).listen(process.env.PORT || 8080);
