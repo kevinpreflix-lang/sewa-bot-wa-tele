@@ -10,8 +10,8 @@ const {
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const fs = require('fs');
-const qrcode = require('qrcode-terminal');
-const sharp = require('sharp'); // Modul pembuat stiker & HD Image
+// const qrcode = require('qrcode-terminal'); // Tidak perlu lagi untuk sistem pairing
+const sharp = require('sharp'); 
 
 // ==========================================
 // 🛡️ 1. ANTI CRASH & DETEKSI WEBP
@@ -32,9 +32,9 @@ const isWebpBuffer = (buffer) => {
 // ⚙️ 2. KONFIGURASI UTAMA
 // ==========================================
 const config = {
-    nomorBot: "6285179905048",
+    nomorBot: "6285179905048", // Pastikan nomor ini adalah nomor bot WA yang aktif
     nomorOwner: "6289519096772", 
-    nameOwner: "Kevin Preflix",
+    nameOwner: "Nailong VIP",
     prefix: ".",
     emailUtama: "purnawankevin63@gmail.com" 
 };
@@ -109,7 +109,7 @@ const logConsole = (tipe, nomor, grup, pesan) => {
 // 🎨 6. FUNGSI MEDIA (UPLOADER & DOWNLOADER)
 // ==========================================
 const uploadImageToTmp = async (buffer) => {
-    const boundary = 'KevinPreflix' + Math.random().toString(16).substring(2);
+    const boundary = 'Nailong' + Math.random().toString(16).substring(2);
     try {
         const body = Buffer.concat([
             Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="image.png"\r\nContent-Type: image/png\r\n\r\n`),
@@ -178,7 +178,7 @@ const formatMemegen = (text) => text.trim().replace(/\s+/g, '_').replace(/\?/g, 
 async function startBot() {
     console.clear();
     console.log(`\x1b[33m╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮\x1b[0m`);
-    console.log(`\x1b[33m┃\x1b[0m \x1b[36m 🎩 KEVIN PREFLIX EST. 2024... \x1b[0m \x1b[33m┃\x1b[0m`);
+    console.log(`\x1b[33m┃\x1b[0m \x1b[36m 🎩 NAILONG VIP SYSTEM EST. 2024 \x1b[0m \x1b[33m┃\x1b[0m`);
     console.log(`\x1b[33m╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯\x1b[0m\n`);
 
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
@@ -187,10 +187,30 @@ async function startBot() {
     const sock = makeWASocket({
         version,
         auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) },
-        printQRInTerminal: false,
+        printQRInTerminal: false, // WAJIB FALSE untuk Pairing Code
         logger: pino({ level: 'silent' }),
-        browser: ["Kevin Preflix V-FINAL", "Chrome", "1.0.0"],
+        // WAJIB menggunakan OS default (Ubuntu) agar API WhatsApp mau memberikan Pairing Code
+        browser: ["Ubuntu", "Chrome", "20.0.04"], 
     });
+
+    // ==========================================
+    // 🔑 8. SISTEM PAIRING CODE (PENGGANTI QR)
+    // ==========================================
+    if (!sock.authState.creds.registered) {
+        const phoneNumber = config.nomorBot.replace(/[^0-9]/g, '');
+        setTimeout(async () => {
+            try {
+                let code = await sock.requestPairingCode(phoneNumber);
+                code = code?.match(/.{1,4}/g)?.join("-") || code;
+                console.log(`\n\x1b[33m╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮\x1b[0m`);
+                console.log(`\x1b[33m┃\x1b[0m \x1b[32m🔑 KODE PAIRING ANDA: \x1b[36m${code} \x1b[0m \x1b[33m┃\x1b[0m`);
+                console.log(`\x1b[33m╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯\x1b[0m`);
+                console.log(`\x1b[37mBuka notifikasi WhatsApp di HP Bot Anda dan masukkan kode di atas.\x1b[0m\n`);
+            } catch (err) {
+                console.log(`\x1b[31m[ 🚨 ERROR ] Gagal mendapatkan kode pairing:\x1b[0m`, err.message);
+            }
+        }, 3000); // Jeda 3 detik agar socket benar-benar siap
+    }
 
     sock.ev.on('creds.update', saveCreds);
 
@@ -252,22 +272,23 @@ async function startBot() {
 
         if (currentTime === jamOperasional.tutup) {
             actionExecuted[actionKey] = true;
-            let txt = `🔒 *JAM OPERASIONAL BERAKHIR* 🔒\n\nTerima kasih atas kunjungannya hari ini, Kak! ☕\nSaat ini manajemen Kevin Preflix sedang beristirahat. Layanan akan kembali beroperasi esok pagi. 🎩💤`;
+            let txt = `🔒 *JAM OPERASIONAL BERAKHIR* 🔒\n\nTerima kasih atas kunjungannya hari ini, Kak! ☕\nSaat ini manajemen Nailong VIP sedang beristirahat. Layanan akan kembali beroperasi esok pagi. 🎩💤`;
             await broadcastAllGroups('announcement', txt);
         }
 
         if (currentTime === jamOperasional.buka) {
             actionExecuted[actionKey] = true;
-            let txt = `☀️ *SELAMAT PAGI* ☀️\n\nPintu etalase Kevin Preflix telah kembali dibuka! 🎩✨\nSemoga hari ini membawa rezeki dan kelancaran untuk kita semua. \n\nSilakan sampaikan pesanan Anda! ☕`;
+            let txt = `☀️ *SELAMAT PAGI* ☀️\n\nPintu etalase Nailong VIP telah kembali dibuka! 🎩✨\nSemoga hari ini membawa rezeki dan kelancaran untuk kita semua. \n\nSilakan sampaikan pesanan Anda! ☕`;
             await broadcastAllGroups('not_announcement', txt);
         }
     }, 15000); 
 
     sock.ev.on('connection.update', (up) => {
-        const { connection, lastDisconnect, qr } = up;
-        if (qr) qrcode.generate(qr, { small: true });
+        const { connection, lastDisconnect } = up;
+        // qrcode.generate dihilangkan karena diganti pairing code
+        
         if (connection === 'open') {
-            console.log(`\x1b[32m[ ✓ ] KONEKSI STABIL. BOT SIAP MELAYANI!\x1b[0m\n`);
+            console.log(`\x1b[32m[ ✓ ] KONEKSI STABIL. BOT NAILONG VIP SIAP MELAYANI!\x1b[0m\n`);
         }
         if (connection === 'close') {
             const r = (lastDisconnect.error instanceof Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
@@ -334,7 +355,7 @@ async function startBot() {
                                          `📦 *Produk:* ${targetKategori.toUpperCase()}\n\n` +
                                          `🔐 *Data Akun:*\n\`\`\`${dataAkun}\`\`\`\n` +
                                          `━━━━━━━━━━━━━━━━━━━━\n` +
-                                         `_Terima kasih telah berbelanja di Kevin Preflix. Cheers!_ 🥂`;
+                                         `_Terima kasih telah berbelanja di Nailong VIP. Cheers!_ 🥂`;
 
                         // Kirim ke Private Chat pembeli
                         await sock.sendMessage(targetPembeli, { text: templateAkun });
@@ -351,7 +372,7 @@ async function startBot() {
             }
 
             if (!from.endsWith('@g.us') && !isOwner) {
-                let warnTxt = `⚜️ *SISTEM KEAMANAN KEVIN PREFLIX* ⚜️\n\n` +
+                let warnTxt = `⚜️ *SISTEM KEAMANAN NAILONG VIP* ⚜️\n\n` +
                               `⚠️ *PERINGATAN KERAS* ⚠️\n` +
                               `Dilarang chat nomor bot ini secara pribadi! Anda dikenakan denda sebesar *Rp 10.000*.\n\n` +
                               `_Jika Anda masih melakukan spam di sini, sistem kami akan memblokir Anda!_ 🎩`;
@@ -381,8 +402,8 @@ async function startBot() {
                 "malam": "Malam, Kak! Masih butuh sesuatu? Kami di sini menemani Anda. 🌙",
                 "terima kasih": "Sama-sama, Kak! Sudah menjadi kewajiban kami memberikan yang terbaik. ✨",
                 "thanks": "Sama-sama! Senang bisa membantu Anda. 🥂",
-                "halo": "Halo juga! Selamat datang di layanan premium Kevin Preflix. Ketik *.menu* untuk memulai. 🎩",
-                "bot": "Panggilan diterima, Tuan/Nyonya! 🎩✨ Asisten Kevin Preflix senantiasa berjaga di sini."
+                "halo": "Halo juga! Selamat datang di layanan premium Nailong VIP. Ketik *.menu* untuk memulai. 🎩",
+                "bot": "Panggilan diterima, Tuan/Nyonya! 🎩✨ Asisten Nailong senantiasa berjaga di sini."
             };
 
             if (!isCmd && smallTalk[budy]) {
@@ -397,7 +418,7 @@ async function startBot() {
             switch (command) {
                 case 'menu':
                 case 'help':
-                    let mnu = `⚜️ *K E V I N  P R E F L I X* ⚜️\n` +
+                    let mnu = `⚜️ *N A I L O N G  V I P* ⚜️\n` +
                               `_Where Digital Needs Meet Elegance_\n\n` +
                               `Selamat ${getGreeting()}, Kak! ☕\n` +
                               `Senang melihat Anda kembali. Silakan jelajahi layanan eksklusif kami di bawah ini:\n\n` +
@@ -436,9 +457,6 @@ async function startBot() {
                     await sendTyping(from, { text: mnu }, { quoted: m }, namaRuang, sender);
                     break;
 
-                // ==========================================
-                // 📥 DOWNLOADER MEDIA KHUSUS TIKTOK
-                // ==========================================
                 case 'download':
                 case 'dl': {
                     if (!text) return reply("📝 _Mohon sertakan link TikTok dan formatnya. \nContoh:_ *.download https://tiktok.com/... | mp4*");
@@ -505,9 +523,6 @@ async function startBot() {
                     break;
                 }
 
-                // ==========================================
-                // 🎨 STUDIO KREASI STIKER & HD UPSCALE
-                // ==========================================
                 case 'hd':
                 case 'upscale': {
                     const targetMsg = m.message.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage || m.message.imageMessage;
@@ -620,7 +635,7 @@ async function startBot() {
 
                 case 'brat':
                 case 'bratid': {
-                    if (!text) return reply("📝 _Mohon sertakan teksnya, Tuan/Nyonya. Contoh: .brat Kevin Preflix_");
+                    if (!text) return reply("📝 _Mohon sertakan teksnya, Tuan/Nyonya. Contoh: .brat Nailong VIP_");
                     await sendTyping(from, { text: "🪄 _Sedang mencetak desain brat eksklusif..._" }, { quoted: m }, namaRuang, sender);
                     
                     const apis = [
@@ -649,12 +664,9 @@ async function startBot() {
                     break;
                 }
 
-                // ==========================================
-                // 🎨 FITUR BARU: BRAT VIDEO (Smart JSON/Buffer Parser)
-                // ==========================================
                 case 'bratvideo':
                 case 'bratvidio': {
-                    if (!text) return reply("📝 _Mohon sertakan teksnya. Contoh: .bratvideo Kevin Preflix_");
+                    if (!text) return reply("📝 _Mohon sertakan teksnya. Contoh: .bratvideo Nailong VIP_");
                     await sendTyping(from, { text: "🪄 _Sedang mencetak video animasi brat eksklusif..._" }, { quoted: m }, namaRuang, sender);
                     
                     const apis = [
@@ -677,7 +689,7 @@ async function startBot() {
                             
                             let contentType = req.headers.get('content-type') || '';
                             
-                            // SKENARIO 1: API MENGEMBALIKAN JSON (Isinya berupa link)
+                            // SKENARIO 1: API MENGEMBALIKAN JSON
                             if (contentType.includes('application/json')) {
                                 let json = await req.json();
                                 let mediaUrl = json?.data?.url || json?.url || json?.result?.url || (typeof json?.result === 'string' ? json.result : null);
@@ -704,7 +716,6 @@ async function startBot() {
 
                     if (!rawBuff) return reply("😵‍💫 _Mohon maaf, semua studio desain animasi (API) sedang penuh atau server memblokir akses._");
 
-                    // Pengecekan file signature untuk MP4 Video
                     let isMp4 = rawBuff[0] === 0x00 && rawBuff[1] === 0x00 && rawBuff[2] === 0x00 && 
                                 (rawBuff[3] === 0x18 || rawBuff[3] === 0x20 || rawBuff[3] === 0x14 || rawBuff[3] === 0x1C) && 
                                 rawBuff[4] === 0x66 && rawBuff[5] === 0x74 && rawBuff[6] === 0x79 && rawBuff[7] === 0x70;
@@ -712,17 +723,13 @@ async function startBot() {
                     if (isMp4) {
                         await sock.sendMessage(from, { video: rawBuff, gifPlayback: true, caption: "🎩 _Desain Brat Video Exclusive_" }, { quoted: m });
                     } else {
-                        // Jika bukan MP4 (misalnya WebP), kirimkan sebagai stiker
                         await sock.sendMessage(from, { sticker: rawBuff }, { quoted: m });
                     }
                     break;
                 }
 
-                // ==========================================
-                // 🎨 FITUR BARU: BRAT PINK
-                // ==========================================
                 case 'bratpink': {
-                    if (!text) return reply("📝 _Mohon sertakan teksnya. Contoh: .bratpink Kevin Preflix_");
+                    if (!text) return reply("📝 _Mohon sertakan teksnya. Contoh: .bratpink Nailong VIP_");
                     await sendTyping(from, { text: "🪄 _Sedang mencetak desain brat pink eksklusif..._" }, { quoted: m }, namaRuang, sender);
                     
                     const apis = [
@@ -800,9 +807,6 @@ async function startBot() {
                     break;
                 }
 
-                // ==========================================
-                // 🗄️ MANAJEMEN BRANKAS & TRANSAKSI
-                // ==========================================
                 case 'addstock': {
                     if (!isAuthorized) return reply("🍷 _Mohon maaf, akses ditolak._");
                     const [kategori, ...isiDataArr] = text.split('@');
